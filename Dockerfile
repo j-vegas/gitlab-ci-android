@@ -2,17 +2,22 @@ FROM ubuntu:20.04
 MAINTAINER Jan Grewe <jan@faked.org>
 
 ENV VERSION_TOOLS "8512546"
+ENV ALLURECTL_VERSION "2.5.0" //set latest version
+ENV MARATHON_VERSION "0.7.6" //set latest version
 
 ENV ANDROID_SDK_ROOT "/sdk"
 # Keep alias for compatibility
 ENV ANDROID_HOME "${ANDROID_SDK_ROOT}"
 ENV PATH "$PATH:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools"
 ENV DEBIAN_FRONTEND noninteractive
+ENV PATH "$PATH:/marathon-bin/marathon-${MARATHON_VERSION}/bin"
+ENV PATH "$PATH:/usr/bin/allurectl"
 
 RUN apt-get -qq update \
  && apt-get install -qqy --no-install-recommends \
       bzip2 \
       curl \
+      wget \
       git-core \
       html2text \
       openjdk-11-jdk \
@@ -47,3 +52,12 @@ RUN mkdir -p /root/.android \
 
 ADD packages.txt /sdk
 RUN sdkmanager --package_file=/sdk/packages.txt
+
+RUN wget -q https://github.com/allure-framework/allurectl/releases/download/${ALLURECTL_VERSION}/allurectl_linux_386 -O /usr/bin/allurectl \
+ && chmod +x /usr/bin/allurectl
+
+RUN wget -O /marathon-${MARATHON_VERSION}.zip https://github.com/MarathonLabs/marathon/releases/download/${MARATHON_VERSION}/marathon-${MARATHON_VERSION}.zip \
+ && mkdir /marathon-bin/ \
+ && unzip -d /marathon-bin/ /marathon-${MARATHON_VERSION}.zip \
+ && rm -v /marathon-${MARATHON_VERSION}.zip \
+ && chmod +x /marathon-bin/marathon-${MARATHON_VERSION}/bin/marathon
